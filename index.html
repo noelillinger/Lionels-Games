@@ -3,66 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kids' Fun Games</title>
+    <title>Lionel's Epic Lego Adventures</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
             font-family: 'Fredoka One', cursive; /* Fun, bubbly font for kids */
-            background-color: #2196F3; /* Bright blue */
+            background-color: #2196F3; /* Bright blue base */
             color: white;
             text-align: center;
             display: flex;
             flex-direction: column;
             height: 100vh; /* Full viewport height */
             justify-content: flex-start; /* Start from top */
+            overflow: hidden; /* Prevent scroll if needed */
+            position: relative; /* For pseudo-elements */
+        }
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #FFEB3B 0%, #2196F3 100%); /* Yellow to blue gradient for epic sky/build feel */
+            opacity: 0.3;
+            z-index: -1;
+        }
+        header {
+            background-color: #F44336; /* Lego red */
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); /* Epic shadow */
+            border-bottom: 5px solid #FFEB3B; /* Yellow brick edge */
+            position: relative;
+        }
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 10px;
+            background: repeating-linear-gradient(to right, #FFEB3B, #FFEB3B 10px, transparent 10px, transparent 20px); /* Stud pattern */
         }
         h1 {
-            color: #FF5722; /* Red-orange */
-            margin-top: 20px; /* A bit of space from top */
+            color: #FFEB3B; /* Yellow for pop */
+            margin: 0;
+            font-size: 48px; /* Epic size */
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5); /* 3D shadow */
         }
         p {
+            color: #FFFFFF;
             margin: 10px 0;
+            font-size: 24px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
         }
         .games {
             flex: 1; /* Take up remaining space */
             display: flex;
             flex-direction: column;
-            justify-content: space-around; /* Evenly space links to the bottom */
+            justify-content: center; /* Center vertically for epic presentation */
             align-items: center;
             padding: 20px;
         }
         .games a {
-            color: #2196F3;
+            color: #2196F3; /* Blue text */
             text-decoration: none;
-            font-size: 24px; /* Larger for kids */
-            padding: 15px 30px;
+            font-size: 28px; /* Larger for impact */
+            padding: 20px 40px;
             background-color: white;
-            border-radius: 30px;
-            margin: 10px 0; /* Vertical spacing */
-            transition: background-color 0.3s;
+            border: 4px solid #F44336; /* Red border like Lego brick */
+            border-radius: 10px; /* Slight round for modern Lego */
+            margin: 15px 0; /* More spacing */
+            transition: transform 0.3s, box-shadow 0.3s;
             width: 80%; /* Wide buttons */
-            max-width: 300px; /* Cap width for larger screens */
+            max-width: 400px; /* Wider for epic feel */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Lifted shadow */
+            position: relative; /* For studs */
+        }
+        .games a::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 8px;
+            background: repeating-linear-gradient(to right, #F44336, #F44336 4px, transparent 4px, transparent 8px); /* Mini studs on top */
         }
         .games a:hover {
+            transform: scale(1.05); /* Epic hover zoom */
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
             background-color: #FFC107; /* Orange hover */
         }
         /* Responsive adjustments */
         @media (max-width: 600px) {
+            h1 { font-size: 36px; }
+            p { font-size: 18px; }
             .games a {
-                font-size: 20px;
-                padding: 12px 24px;
+                font-size: 22px;
+                padding: 15px 30px;
             }
         }
     </style>
 </head>
 <body>
-    <h1>Welcome to Kids' Fun Games!</h1>
-    <p>Pick a game below and start playing!</p>
+    <header>
+        <h1>Welcome to Lionel's Epic Lego Adventures!</h1>
+        <p>Build, Play, and Discover – Fun for Kids and Parents Alike!</p>
+    </header>
     <div class="games">
         <a href="space-shooter.html">Lionel's Space Shooter</a>
         <a href="snake.html">Snake</a>
         <a href="pacman.html">Pacman</a>
+        <a href="learn-ai.html">Learn about AI</a>
     </div>
 </body>
 </html>
