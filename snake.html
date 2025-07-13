@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake (Lego Style)</title>
+    <style>
+        body { margin: 0; background-color: #2196F3; }
+        canvas { display: block; margin: 0 auto; background: #4CAF50; } /* Green baseplate */
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const gridSize = 20; // Brick size
+        canvas.width = Math.min(window.innerWidth, 400); // Responsive, cap at 400px
+        canvas.height = Math.min(window.innerHeight, 400);
+        const cols = Math.floor(canvas.width / gridSize);
+        const rows = Math.floor(canvas.height / gridSize);
+
+        let snake = [{ x: 5, y: 5 }];
+        let direction = { x: 1, y: 0 };
+        let food = { x: Math.floor(Math.random() * cols), y: Math.floor(Math.random() * rows) };
+        let score = 0;
+        let gameOver = false;
+
+        // Controls: Keyboard
+        document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowUp' && direction.y === 0) direction = { x: 0, y: -1 };
+            if (e.key === 'ArrowDown' && direction.y === 0) direction = { x: 0, y: 1 };
+            if (e.key === 'ArrowLeft' && direction.x === 0) direction = { x: -1, y: 0 };
+            if (e.key === 'ArrowRight' && direction.x === 0) direction = { x: 1, y: 0 };
+        });
+
+        // Swipe for mobile
+        let touchStartX = 0, touchStartY = 0;
+        canvas.addEventListener('touchstart', e => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+        canvas.addEventListener('touchend', e => {
+            const deltaX = e.changedTouches[0].clientX - touchStartX;
+            const deltaY = e.changedTouches[0].clientY - touchStartY;
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                if (deltaX > 0 && direction.x === 0) direction = { x: 1, y: 0 };
+                if (deltaX < 0 && direction.x === 0) direction = { x: -1, y: 0 };
+            } else {
+                if (deltaY > 0 && direction.y === 0) direction = { x: 0, y: 1 };
+                if (deltaY < 0 && direction.y === 0) direction = { x: 0, y: -1 };
+            }
+        });
+
+        function update() {
+            if (gameOver) return;
+
+            const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
+
+            // Wall collision
+            if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows) {
+                gameOver = true;
+                return;
+            }
+
+            // Self collision
+            for (let i = 1; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    gameOver = true;
+                    return;
+                }
+            }
+
+            snake.unshift(head);
+
+            // Eat food
+            if (head.x === food.x && head.y === food.y) {
+                score++;
+                food = { x: Math.floor(Math.random() * cols), y: Math.floor(Math.random() * rows) };
+            } else {
+                snake.pop();
+            }
+        }
+
+        function drawLegoBrick(x, y, color) {
+            const px = x * gridSize;
+            const py = y * gridSize;
+
+            // Brick body
+            ctx.fillStyle = color;
+            ctx.fillRect(px + 1, py + 1, gridSize - 2, gridSize - 2);
+
+            // Border/shadow for 3D
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(px, py, gridSize, gridSize);
+
+            // Studs (small circles on top)
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(px + gridSize / 4, py + gridSize / 4, gridSize / 8, 0, Math.PI * 2);
+            ctx.arc(px + 3 * gridSize / 4, py + gridSize / 4, gridSize / 8, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Subtle grid lines for baseplate
+            ctx.strokeStyle = '#388E3C'; // Darker green
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= cols; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * gridSize, 0);
+                ctx.lineTo(i * gridSize, canvas.height);
+                ctx.stroke();
+            }
+            for (let i = 0; i <= rows; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, i * gridSize);
+                ctx.lineTo(canvas.width, i * gridSize);
+                ctx.stroke();
+            }
+
+            // Snake (yellow Lego bricks)
+            snake.forEach(segment => drawLegoBrick(segment.x, segment.y, '#FFEB3B'));
+
+            // Food (red Lego brick)
+            drawLegoBrick(food.x, food.y, '#F44336');
+
+            // Score
+            ctx.font = '20px Arial';
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'left';
+            ctx.fillText(`Score: ${score}`, 10, 30);
+
+            if (gameOver) {
+                ctx.textAlign = 'center';
+                ctx.fillText('Game Over!', canvas.width / 2, canvas.height / 2);
+            }
+        }
+
+        setInterval(() => {
+            update();
+            draw();
+        }, 150); // Speed ~6-7 moves/sec
+    </script>
+</body>
+</html>

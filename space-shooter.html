@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lionel's Space Shooter</title>
+    <style>
+        body { margin: 0; background-color: #2196F3; } /* Match site theme */
+        canvas { display: block; margin: 0 auto; background: black; }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let player = { x: canvas.width / 2 - 25, y: canvas.height - 160, width: 50, height: 50 }; // Bottom offset like iOS
+        let bullets = [];
+        let enemies = [];
+        let stars = [];
+        let score = 0;
+        let highScore = 0;
+        let lastShotTime = 0;
+        const shootInterval = 500; // ms
+        let gameOverLabel = { text: '', timer: 0 };
+        let isDragging = false;
+
+        // Create initial stars
+        for (let i = 0; i < 30; i++) {
+            createStar();
+        }
+
+        function createStar() {
+            const size = Math.random() * 2 + 1;
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: size,
+                speed: Math.random() * 20 + 20 // Duration 20-40s equivalent speed
+            });
+        }
+
+        // Mouse/Touch events
+        canvas.addEventListener('mousedown', () => { isDragging = true; shoot(); });
+        canvas.addEventListener('mousemove', movePlayer);
+        canvas.addEventListener('mouseup', () => isDragging = false);
+        canvas.addEventListener('touchstart', (e) => { movePlayer(e.touches[0]); shoot(); });
+        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); movePlayer(e.touches[0]); });
+
+        function movePlayer(e) {
+            if (!isDragging && e.type === 'mousemove') return;
+            const rect = canvas.getBoundingClientRect();
+            player.x = (e.clientX - rect.left) - player.width / 2;
+            player.x = Math.max(0, Math.min(player.x, canvas.width - player.width));
+        }
+
+        function shoot() {
+            bullets.push({
+                x: player.x + player.width / 2 - 2.5,
+                y: player.y,
+                width: 5,
+                height: 10,
+                speed: 500 / 60 // px per frame
+            });
+        }
+
+        function spawnEnemy() {
+            const size = Math.random() * 20 + 20;
+            enemies.push({
+                x: Math.random() * canvas.width,
+                y: -size,
+                width: size,
+                height: size,
+                speed: 200 / 60
+            });
+        }
+
+        function update() {
+            const now = Date.now();
+            if (now - lastShotTime > shootInterval) {
+                shoot();
+                lastShotTime = now;
+            }
+
+            if (Math.random() < 0.02) spawnEnemy();
+
+            // Update stars
+            stars.forEach(star => {
+                star.y += star.speed / 60;
+                if (star.y > canvas.height) star.y = -star.size;
+            });
+
+            // Update bullets
+            bullets = bullets.filter(b => {
+                b.y -= b.speed;
+                return b.y > -b.height;
+            });
+
+            // Update enemies
+            enemies = enemies.filter(e => {
+                e.y += e.speed;
+                return e.y < canvas.height + e.height;
+            });
+
+            // Collisions
+            bullets.forEach((b, bi) => {
+                enemies.forEach((e, ei) => {
+                    if (b.x < e.x + e.width && b.x + b.width > e.x &&
+                        b.y < e.y + e.height && b.y + b.height > e.y) {
+                        bullets.splice(bi, 1);
+                        enemies.splice(ei, 1);
+                        score++;
+                        if (score > highScore) highScore = score;
+                    }
+                });
+            });
+
+            enemies.forEach((e, ei) => {
+                if (player.x < e.x + e.width && player.x + player.width > e.x &&
+                    player.y < e.y + e.height && player.y + player.height > e.y) {
+                    score = 0;
+                    enemies = [];
+                    gameOverLabel = { text: 'Game Over! Tap to Restart', timer: 3000 };
+                }
+            });
+
+            if (gameOverLabel.timer > 0) gameOverLabel.timer -= 1000 / 60;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Stars
+            ctx.fillStyle = 'white';
+            stars.forEach(star => {
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size / 2, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Player
+            ctx.fillStyle = 'white';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+
+            // Bullets
+            ctx.fillStyle = 'red';
+            bullets.forEach(b => ctx.fillRect(b.x, b.y, b.width, b.height));
+
+            // Enemies
+            ctx.fillStyle = 'white';
+            enemies.forEach(e => ctx.fillRect(e.x, e.y, e.width, e.height));
+
+            // Scores
+            ctx.font = '20px Arial';
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'left';
+            ctx.fillText(`Score: ${score}`, 30, 30);
+            ctx.textAlign = 'right';
+            ctx.fillText(`High: ${highScore}`, canvas.width - 30, 30);
+
+            // Game Over
+            if (gameOverLabel.timer > 0) {
+                ctx.textAlign = 'center';
+                ctx.fillText(gameOverLabel.text, canvas.width / 2, canvas.height / 2);
+            }
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>

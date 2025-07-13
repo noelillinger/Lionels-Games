@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pacman (Lego Ninjago Style)</title>
+    <style>
+        body { margin: 0; background-color: #2196F3; }
+        canvas { display: block; margin: 0 auto; background: #333; } /* Dark base for Ninjago dojo feel */
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const tileSize = 20; // Brick size for Lego feel
+        canvas.width = Math.min(window.innerWidth, 560); // 28 tiles wide (standard Pacman maze)
+        canvas.height = Math.min(window.innerHeight - 100, 620); // 31 tiles high, with space for score
+
+        const cols = canvas.width / tileSize;
+        const rows = canvas.height / tileSize;
+
+        // Simple Pacman maze layout (1=wall, 0=dot path, 2=power pellet, 3=empty, 4=ghost house gate)
+        const maze = [
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1],
+            [1,2,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,2,1],
+            [1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,0,1],
+            [1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,0,1],
+            [1,0,0,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0,1],
+            [1,1,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1],
+            [1,1,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1],
+            [1,1,1,1,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1],
+            [1,1,1,1,1,1,0,1,1,0,1,1,1,4,4,1,1,1,0,1,1,0,1,1,1,1,1,1],
+            [1,1,1,1,1,1,0,1,1,0,1,3,3,3,3,3,3,1,0,1,1,0,1,1,1,1,1,1],
+            [0,0,0,0,0,0,0,0,0,0,1,3,3,3,3,3,3,1,0,0,0,0,0,0,0,0,0,0],
+            [1,1,1,1,1,1,0,1,1,0,1,3,3,3,3,3,3,1,0,1,1,0,1,1,1,1,1,1],
+            [1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1],
+            [1,1,1,1,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1],
+            [1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1],
+            [1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1],
+            [1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1],
+            [1,2,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,2,1],
+            [1,1,1,0,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,0,1,1,1],
+            [1,1,1,0,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,0,1,1,1],
+            [1,0,0,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0,1],
+            [1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1],
+            [1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+        ];
+
+        let pacman = { x: 13.5, y: 23, dir: 'left', mouthOpen: true, speed: 0.15 }; // Start position, speed in tiles/frame
+        let ghosts = [
+            { x: 13.5, y: 11, color: '#FF0000', dir: 'up', scared: false }, // Red (Blindy-like ninja)
+            { x: 12, y: 14, color: '#00FFFF', dir: 'right', scared: false }, // Cyan (Inky-like)
+            { x: 13, y: 14, color: '#FFB852', dir: 'left', scared: false }, // Orange (Clyde-like)
+            { x: 15, y: 14, color: '#FF69B4', dir: 'right', scared: false } // Pink (Pinky-like)
+        ];
+        let score = 0;
+        let lives = 3;
+        let powerMode = false;
+        let powerTimer = 0;
+        const powerDuration = 600; // Frames (~10s at 60fps)
+        let gameOver = false;
+
+        // Controls
+        let nextDir = pacman.dir;
+        document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowUp') nextDir = 'up';
+            if (e.key === 'ArrowDown') nextDir = 'down';
+            if (e.key === 'ArrowLeft') nextDir = 'left';
+            if (e.key === 'ArrowRight') nextDir = 'right';
+        });
+
+        // Swipe for mobile
+        let touchStartX = 0, touchStartY = 0;
+        canvas.addEventListener('touchstart', e => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+        canvas.addEventListener('touchend', e => {
+            const deltaX = e.changedTouches[0].clientX - touchStartX;
+            const deltaY = e.changedTouches[0].clientY - touchStartY;
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                nextDir = deltaX > 0 ? 'right' : 'left';
+            } else {
+                nextDir = deltaY > 0 ? 'down' : 'up';
+            }
+        });
+
+        function update() {
+            if (gameOver) return;
+
+            // Update Pacman direction if possible
+            if (canMove(pacman.x, pacman.y, nextDir)) pacman.dir = nextDir;
+
+            // Move Pacman
+            moveEntity(pacman, pacman.dir);
+
+            // Eat dots/power pellets
+            const tileX = Math.floor(pacman.x);
+            const tileY = Math.floor(pacman.y);
+            if (maze[tileY][tileX] === 0) {
+                maze[tileY][tileX] = 3; // Empty
+                score += 10;
+            } else if (maze[tileY][tileX] === 2) {
+                maze[tileY][tileX] = 3;
+                score += 50;
+                powerMode = true;
+                powerTimer = powerDuration;
+                ghosts.forEach(g => g.scared = true);
+            }
+
+            // Power mode timer
+            if (powerMode) {
+                powerTimer--;
+                if (powerTimer <= 0) {
+                    powerMode = false;
+                    ghosts.forEach(g => g.scared = false);
+                }
+            }
+
+            // Move ghosts (simple random chase/avoid)
+            ghosts.forEach(ghost => {
+                let dirs = ['up', 'down', 'left', 'right'].filter(d => d !== oppositeDir(ghost.dir) && canMove(ghost.x, ghost.y, d));
+                if (dirs.length === 0) dirs = [oppositeDir(ghost.dir)]; // U-turn if dead end
+
+                // Chase logic: Prefer direction towards Pacman if not scared
+                if (!ghost.scared) {
+                    const targetX = pacman.x, targetY = pacman.y;
+                    dirs.sort((a, b) => distToTarget(ghost, a, targetX, targetY) - distToTarget(ghost, b, targetX, targetY));
+                } else {
+                    // Flee: Prefer away from Pacman
+                    const targetX = pacman.x, targetY = pacman.y;
+                    dirs.sort((a, b) => distToTarget(ghost, b, targetX, targetY) - distToTarget(ghost, a, targetX, targetY));
+                }
+
+                ghost.dir = dirs[0] || ghost.dir;
+                moveEntity(ghost, ghost.dir);
+            });
+
+            // Collisions with ghosts
+            ghosts.forEach((ghost, i) => {
+                if (Math.abs(ghost.x - pacman.x) < 0.5 && Math.abs(ghost.y - pacman.y) < 0.5) {
+                    if (ghost.scared) {
+                        // Eat ghost
+                        score += 200;
+                        ghosts[i] = { x: 13.5, y: 14, color: ghost.color, dir: 'up', scared: false }; // Respawn
+                    } else {
+                        // Lose life
+                        lives--;
+                        if (lives <= 0) gameOver = true;
+                        resetPositions();
+                    }
+                }
+            });
+
+            // Check if all dots eaten (win level, but for simplicity, just continue)
+        }
+
+        function canMove(x, y, dir) {
+            let nx = x, ny = y;
+            if (dir === 'up') ny -= 0.1;
+            if (dir === 'down') ny += 0.1;
+            if (dir === 'left') nx -= 0.1;
+            if (dir === 'right') nx += 0.1;
+            const tx = Math.floor(nx), ty = Math.floor(ny);
+            if (tx < 0 || tx >= cols || ty < 0 || ty >= rows) return true; // Tunnel edges
+            return maze[ty][tx] !== 1 && maze[ty][tx] !== 4; // Not wall or gate
+        }
+
+        function moveEntity(entity, dir) {
+            if (dir === 'up') entity.y -= entity.speed || 0.1; // Ghosts slower
+            if (dir === 'down') entity.y += entity.speed || 0.1;
+            if (dir === 'left') entity.x -= entity.speed || 0.1;
+            if (dir === 'right') entity.x += entity.speed || 0.1;
+
+            // Tunnel wrap-around
+            if (entity.x < -0.5) entity.x = cols - 0.5;
+            if (entity.x > cols - 0.5) entity.x = -0.5;
+        }
+
+        function oppositeDir(dir) {
+            if (dir === 'up') return 'down';
+            if (dir === 'down') return 'up';
+            if (dir === 'left') return 'right';
+            if (dir === 'right') return 'left';
+        }
+
+        function distToTarget(ghost, dir, tx, ty) {
+            let nx = ghost.x, ny = ghost.y;
+            if (dir === 'up') ny--;
+            if (dir === 'down') ny++;
+            if (dir === 'left') nx--;
+            if (dir === 'right') nx++;
+            return Math.sqrt((nx - tx)**2 + (ny - ty)**2);
+        }
+
+        function resetPositions() {
+            pacman = { x: 13.5, y: 23, dir: 'left', mouthOpen: true, speed: 0.15 };
+            ghosts = [
+                { x: 13.5, y: 11, color: '#FF0000', dir: 'up', scared: false },
+                { x: 12, y: 14, color: '#00FFFF', dir: 'right', scared: false },
+                { x: 13, y: 14, color: '#FFB852', dir: 'left', scared: false },
+                { x: 15, y: 14, color: '#FF69B4', dir: 'right', scared: false }
+            ];
+            powerMode = false;
+            powerTimer = 0;
+        }
+
+        function drawLegoWall(x, y, color = '#00008B') { // Dark blue for Ninjago walls
+            const px = x * tileSize;
+            const py = y * tileSize;
+
+            // Brick body
+            ctx.fillStyle = color;
+            ctx.fillRect(px + 1, py + 1, tileSize - 2, tileSize - 2);
+
+            // Border/shadow for 3D Lego
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(px, py, tileSize, tileSize);
+
+            // Studs
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(px + tileSize / 4, py + tileSize / 4, tileSize / 8, 0, Math.PI * 2);
+            ctx.arc(px + 3 * tileSize / 4, py + tileSize / 4, tileSize / 8, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawPacman(x, y, dir, mouthOpen) {
+            const px = x * tileSize, py = y * tileSize;
+            ctx.fillStyle = '#FFEB3B'; // Yellow Lego ninja
+            ctx.beginPath();
+            let startAngle = 0, endAngle = Math.PI * 2;
+            if (mouthOpen) {
+                if (dir === 'right') startAngle = 0.2 * Math.PI, endAngle = 1.8 * Math.PI;
+                if (dir === 'left') startAngle = 1.2 * Math.PI, endAngle = 0.8 * Math.PI + 2 * Math.PI;
+                if (dir === 'up') startAngle = 1.7 * Math.PI, endAngle = 1.3 * Math.PI + 2 * Math.PI;
+                if (dir === 'down') startAngle = 0.7 * Math.PI, endAngle = 0.3 * Math.PI + 2 * Math.PI;
+            }
+            ctx.arc(px, py, tileSize / 2 - 2, startAngle, endAngle);
+            ctx.lineTo(px, py);
+            ctx.fill();
+
+            // Ninjago hood/eyes (simple black lines)
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(px - 5, py - 5);
+            ctx.lineTo(px + 5, py - 5);
+            ctx.stroke();
+        }
+
+        function drawGhost(x, y, color, scared) {
+            const px = x * tileSize, py = y * tileSize;
+            ctx.fillStyle = scared ? '#0000FF' : color; // Blue when scared
+            // Body: Wavy bottom for ghost, but Lego minifig style
+            ctx.beginPath();
+            ctx.arc(px, py - tileSize / 4, tileSize / 2 - 2, Math.PI, 0, false); // Head
+            ctx.lineTo(px + tileSize / 2 - 2, py + tileSize / 4);
+            ctx.lineTo(px + tileSize / 3, py + tileSize / 2);
+            ctx.lineTo(px, py + tileSize / 4);
+            ctx.lineTo(px - tileSize / 3, py + tileSize / 2);
+            ctx.lineTo(px - tileSize / 2 + 2, py + tileSize / 4);
+            ctx.closePath();
+            ctx.fill();
+
+            // Eyes
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(px - tileSize / 6, py - tileSize / 4, tileSize / 8, 0, Math.PI * 2);
+            ctx.arc(px + tileSize / 6, py - tileSize / 4, tileSize / 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(px - tileSize / 6, py - tileSize / 4, tileSize / 16, 0, Math.PI * 2);
+            ctx.arc(px + tileSize / 6, py - tileSize / 4, tileSize / 16, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Ninjago ninja mask touch: Add a small band
+            ctx.strokeStyle = 'gold'; // Elemental energy
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(px - tileSize / 2 + 2, py - tileSize / 2 + 2);
+            ctx.lineTo(px + tileSize / 2 - 2, py - tileSize /  / 2 + 2);
+            ctx.stroke();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw maze
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    if (maze[y][x] === 1 || maze[y][x] === 4) {
+                        drawLegoWall(x, y);
+                    } else if (maze[y][x] === 0) {
+                        // Dot as small yellow stud
+                        ctx.fillStyle = '#FFD700'; // Gold for Ninjago weapons/dots
+                        ctx.beginPath();
+                        ctx.arc(x * tileSize + tileSize / 2, y * tileSize + tileSize / 2, tileSize / 8, 0, Math.PI * 2);
+                        ctx.fill();
+                    } else if (maze[y][x] === 2) {
+                        // Power pellet larger
+                        ctx.fillStyle = '#FFD700';
+                        ctx.beginPath();
+                        ctx.arc(x * tileSize + tileSize / 2, y * tileSize + tileSize / 2, tileSize / 4, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+            }
+
+            // Draw Pacman
+            drawPacman(pacman.x, pacman.y, pacman.dir, pacman.mouthOpen);
+            pacman.mouthOpen = !pacman.mouthOpen; // Toggle for animation
+
+            // Draw ghosts
+            ghosts.forEach(g => drawGhost(g.x, g.y, g.color, g.scared));
+
+            // Score and lives
+            ctx.font = '20px Arial';
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'left';
+            ctx.fillText(`Score: ${score}`, 10, 30);
+            ctx.fillText(`Lives: ${lives}`, 10, 60);
+
+            if (gameOver) {
+                ctx.textAlign = 'center';
+                ctx.font = '30px Arial';
+                ctx.fillText('Game Over!', canvas.width / 2, canvas.height / 2);
+            }
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>
