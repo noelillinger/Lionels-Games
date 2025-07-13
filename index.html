@@ -14,9 +14,8 @@
             text-align: center;
             display: flex;
             flex-direction: column;
-            height: 100vh; /* Full viewport height */
+            min-height: 100vh; /* Allow expansion for scrolling */
             justify-content: flex-start; /* Start from top */
-            overflow: hidden; /* Prevent scroll if needed */
             position: relative; /* For pseudo-elements */
         }
         body::before {
@@ -106,10 +105,9 @@
             border-top: 5px solid #FFEB3B; /* Yellow edge */
         }
         #lang-toggle {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            padding: 5px 10px;
+            align-self: flex-start; /* Align to left */
+            margin: 10px 0 0 10%; /* Padding to left, matching button width offset */
+            padding: 10px 20px;
             background-color: white;
             border: 2px solid #F44336;
             border-radius: 5px;
@@ -131,7 +129,7 @@
                 padding: 15px 30px;
             }
             footer { font-size: 12px; }
-            #lang-toggle { font-size: 14px; padding: 4px 8px; }
+            #lang-toggle { font-size: 14px; padding: 8px 16px; margin-left: 10%; }
         }
     </style>
 </head>
@@ -140,16 +138,16 @@
         <h1 data-en="Welcome to Lionel's Epic Lego Adventures!" data-de="Willkommen zu Lionels epischen Lego-Abenteuern!">Welcome to Lionel's Epic Lego Adventures!</h1>
         <p data-en="Build, Play, and Discover – Fun for Kids and Parents Alike!" data-de="Bauen, Spielen und Entdecken – Spaß für Kinder und Eltern!">Build, Play, and Discover – Fun for Kids and Parents Alike!</p>
     </header>
+    <button id="lang-toggle">Deutsch 🇩🇪</button>
     <div class="games">
         <a href="space-shooter.html" data-en="Lionel's Space Shooter (Minecraft Style)" data-de="Lionels Space Shooter (Minecraft-Stil)">Lionel's Space Shooter (Minecraft Style)</a>
         <a href="snake.html" data-en="Snake (Lego Style)" data-de="Snake (Lego-Stil)">Snake (Lego Style)</a>
         <a href="pacman.html" data-en="Pacman (Ninjago Style)" data-de="Pacman (Ninjago-Stil)">Pacman (Ninjago Style)</a>
-        <a href="learn-ai.html" data-en="Learn about AI (The Kids way)" data-de="Lerne über KI (Auf kindgerechte Weise)">Learn about AI (The Kids way)</a>
+        <a href="learn-ai.html" data-en="Learn about AI<br>(The Kids way)" data-de="Lerne über KI<br>(Auf kindgerechte Weise)">Learn about AI<br>(The Kids way)</a>
     </div>
     <footer>
-        Website and Games created with Grok 4 by prompts of a Daddy. For my son Lionel, ❤️, Noel. Free to use for others.
+        Website and Games created with Grok 4 by prompts of a Daddy. For my son Lionel, ❤️, Noel.
     </footer>
-    <button id="lang-toggle">Deutsch</button>
     <script>
         const langToggle = document.getElementById('lang-toggle');
         const body = document.body;
@@ -159,10 +157,10 @@
             const currentLang = body.getAttribute('data-lang');
             const newLang = currentLang === 'en' ? 'de' : 'en';
             body.setAttribute('data-lang', newLang);
-            langToggle.textContent = newLang === 'en' ? 'Deutsch' : 'English';
+            langToggle.innerHTML = newLang === 'en' ? 'Deutsch 🇩🇪' : 'English 🇬🇧';
 
             elements.forEach(el => {
-                el.textContent = el.getAttribute(`data-${newLang}`);
+                el.innerHTML = el.getAttribute(`data-${newLang}`);
             });
         }
 

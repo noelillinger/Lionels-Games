@@ -14,20 +14,28 @@
         }
         canvas { 
             display: block; 
-            margin: 60px auto 20px; /* Padding top for back button/score, bottom for controls */
+            margin: 80px auto 20px; /* Increased top padding for back button/score */
             background: #4CAF50; /* Green baseplate */
+            border: 4px solid #FFEB3B; /* Yellow Lego border for stunning frame */
+            box-shadow: 0 0 20px rgba(255, 235, 59, 0.5); /* Glowing Lego effect */
         }
         #back-link {
             position: absolute;
             top: 10px;
             left: 10px;
             padding: 10px 20px;
-            background-color: #FF5722; /* Red-orange */
-            border-radius: 10px;
+            background-color: #FF5722; /* Red-orange, Lego brick */
+            border: 3px solid #F44336; /* Deeper red border */
+            border-radius: 8px; /* Slight Lego round */
             text-decoration: none;
             color: white;
             font-size: 18px;
-            z-index: 5; /* Above other elements */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Lifted shadow */
+            transition: transform 0.3s;
+            z-index: 10;
+        }
+        #back-link:hover {
+            transform: scale(1.05);
         }
         #start-message {
             position: absolute;
@@ -35,46 +43,67 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background-color: rgba(0, 0, 0, 0.7);
-            padding: 20px;
-            border-radius: 10px;
+            padding: 30px;
+            border-radius: 15px;
             text-align: center;
             z-index: 10;
             max-width: 80%;
+            border: 4px solid #FFEB3B; /* Yellow Lego frame */
+            box-shadow: 0 0 15px rgba(255, 235, 59, 0.7); /* Glowing for excitement */
         }
         #controls {
             display: flex;
+            flex-direction: column;
+            align-items: center;
             justify-content: center;
             margin: 0 auto;
-            max-width: 300px;
-            position: fixed; /* Fixed at bottom for easy thumb reach */
+            max-width: 200px;
+            position: fixed; /* Fixed at bottom */
             bottom: 20px;
             left: 0;
             right: 0;
             z-index: 5;
         }
+        .control-row {
+            display: flex;
+            justify-content: center;
+        }
         .control-btn {
-            width: 80px; /* Larger for mobile */
-            height: 80px;
-            background-color: #FFC107; /* Yellow */
+            width: 60px;
+            height: 60px;
+            background-color: #FFC107; /* Yellow Lego brick */
             margin: 5px;
-            border-radius: 15px;
+            border: 3px solid #FFA000; /* Darker yellow border */
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 40px;
+            font-size: 30px;
             cursor: pointer;
             user-select: none;
-            transition: background-color 0.2s; /* Feedback on tap */
+            transition: background-color 0.2s, transform 0.2s; /* Feedback on tap */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* 3D Lego lift */
         }
         .control-btn:active {
-            background-color: #FFA000; /* Darker on press */
+            background-color: #FFEB3B; /* Brighter on press */
+            transform: scale(0.95); /* Press down effect */
         }
-        .control-row { display: flex; }
+        .control-btn::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            width: 20px;
+            height: 4px;
+            background: repeating-linear-gradient(to right, #FFC107, #FFC107 2px, transparent 2px, transparent 4px); /* Mini studs */
+        }
         /* Hide start message after game starts */
         #start-message.hidden { display: none; }
         /* Responsive adjustments */
         @media (max-width: 600px) {
-            .control-btn { width: 60px; height: 60px; font-size: 30px; margin: 3px; }
+            .control-btn { width: 50px; height: 50px; font-size: 24px; margin: 3px; }
+        }
+        @media (min-width: 769px) {
+            #controls { display: none; } /* Hide on-screen controls on desktop */
         }
     </style>
 </head>
@@ -83,6 +112,7 @@
     <canvas id="gameCanvas"></canvas>
     <div id="start-message">
         <p>Schlängel los und friss so viele Legos auf, wie du kannst.</p>
+        <p>Auf Mobile: Steuere mit den Buttons oder Swipe. Tippe zum Starten!<br>Auf Desktop: Steuere mit Pfeiltasten, Space zum Starten/Pausieren.</p>
         <p>Tap to start!</p>
     </div>
     <div id="controls">
@@ -91,8 +121,10 @@
         </div>
         <div class="control-row">
             <div class="control-btn" id="left">←</div>
-            <div class="control-btn" id="down">↓</div>
             <div class="control-btn" id="right">→</div>
+        </div>
+        <div class="control-row">
+            <div class="control-btn" id="down">↓</div>
         </div>
     </div>
     <script>
@@ -115,6 +147,7 @@
         let score = 0;
         let gameOver = false;
         let gameStarted = false; // For start message
+        let isPaused = false; // For desktop pause
         const startMessage = document.getElementById('start-message');
 
         function resetGame() {
@@ -139,16 +172,21 @@
             }
         }
 
-        // Keyboard controls
+        // Keyboard controls (desktop)
         document.addEventListener('keydown', e => {
-            startGame();
+            if (e.code === 'Space') {
+                if (!gameStarted) startGame();
+                else isPaused = !isPaused;
+                return;
+            }
+            if (!gameStarted || isPaused) return;
             if (e.key === 'ArrowUp' && direction.y === 0) direction = { x: 0, y: -1 };
             if (e.key === 'ArrowDown' && direction.y === 0) direction = { x: 0, y: 1 };
             if (e.key === 'ArrowLeft' && direction.x === 0) direction = { x: -1, y: 0 };
             if (e.key === 'ArrowRight' && direction.x === 0) direction = { x: 1, y: 0 };
         });
 
-        // Swipe controls (enhanced for better sensitivity)
+        // Swipe controls (mobile)
         let touchStartX = 0, touchStartY = 0;
         canvas.addEventListener('touchstart', e => {
             startGame();
@@ -174,7 +212,7 @@
             }
         });
 
-        // On-screen arrow buttons
+        // On-screen arrow buttons (mobile, gamepad layout)
         document.getElementById('up').addEventListener('touchstart', () => { startGame(); if (direction.y === 0) direction = { x: 0, y: -1 }; });
         document.getElementById('down').addEventListener('touchstart', () => { startGame(); if (direction.y === 0) direction = { x: 0, y: 1 }; });
         document.getElementById('left').addEventListener('touchstart', () => { startGame(); if (direction.x === 0) direction = { x: -1, y: 0 }; });
@@ -186,7 +224,7 @@
         });
 
         function update() {
-            if (gameOver || !gameStarted) return;
+            if (gameOver || !gameStarted || isPaused) return;
             const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
 
             // Wall collision
@@ -254,8 +292,11 @@
                 ctx.stroke();
             }
 
-            // Snake (yellow Lego bricks)
-            snake.forEach(segment => drawLegoBrick(segment.x, segment.y, '#FFEB3B'));
+            // Snake (yellow Lego bricks, head red)
+            snake.forEach((segment, index) => {
+                const color = index === 0 ? '#F44336' : '#FFEB3B'; // Head red, body yellow
+                drawLegoBrick(segment.x, segment.y, color);
+            });
 
             // Food (red Lego brick)
             drawLegoBrick(food.x, food.y, '#F44336');
@@ -268,10 +309,9 @@
 
             if (gameOver) {
                 ctx.textAlign = 'center';
-                ctx.font = '30px Arial';
                 ctx.fillText('Game Over!', canvas.width / 2, canvas.height / 2 - 20);
                 ctx.font = '20px Arial';
-                ctx.fillText('Tap to Restart', canvas.width / 2, canvas.height / 2 + 20);
+                ctx.fillText('Tap/Click to Restart', canvas.width / 2, canvas.height / 2 + 20);
             }
         }
 
