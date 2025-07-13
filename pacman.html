@@ -12,15 +12,20 @@
             font-family: 'Arial', sans-serif;
             color: white;
             overflow: hidden; /* Prevent scrolling on all devices */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
         canvas { 
             display: block; 
-            margin: 60px auto 20px; /* Padding top for back button/score, bottom for controls */
+            margin: 0; /* Padding top for back button/score, bottom for controls */
             background: #333; /* Dark base for Ninjago dojo feel */
         }
         #back-link {
             position: absolute;
-            top: -50px;
+            top: 10px;
             left: 18px;
             padding: 10px 20px;
             background-color: #FFC107; /* Yellow Lego brick */
@@ -50,82 +55,11 @@
             height: 4px;
             background: repeating-linear-gradient(to right, #FFC107, #FFC107 2px, transparent 2px, transparent 4px); /* Mini studs */
         }
-        #controls {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto;
-            max-width: 300px; /* Wider for spacing */
-            position: fixed; /* Fixed at bottom */
-            bottom: 20px;
-            left: 0;
-            right: 0;
-            z-index: 5;
-        }
-        .control-row {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-        }
-        .lr-row {
-            justify-content: center; /* Closer together */
-            max-width: 100%; /* Use full width for better spacing */
-            gap: 75px;
-        }
-        .control-btn {
-            width: 60px;
-            height: 60px;
-            background-color: #FFC107; /* Yellow Lego brick */
-            margin: 5px; /* Symmetric margins */
-            border: 3px solid #FFA000; /* Darker yellow border */
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 30px;
-            cursor: pointer;
-            user-select: none;
-            transition: background-color 0.2s, transform 0.2s; /* Feedback on tap */
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* 3D Lego lift */
-        }
-        .control-btn:active {
-            background-color: #FFEB3B; /* Brighter on press */
-            transform: scale(0.95); /* Press down effect */
-        }
-        .control-btn::before {
-            content: '';
-            position: absolute;
-            top: -4px;
-            width: 20px;
-            height: 4px;
-            background: repeating-linear-gradient(to right, #FFC107, #FFC107 2px, transparent 2px, transparent 4px); /* Mini studs */
-        }
-        /* Responsive adjustments */
-        @media (max-width: 600px) {
-            .control-btn { width: 50px; height: 50px; font-size: 24px; margin: 3px; }
-            .lr-row { max-width: 90%; gap: 65px; }
-        }
-        @media (min-width: 769px) {
-            #controls { display: none; } /* Hide on-screen controls on desktop */
-        }
     </style>
 </head>
 <body>
     <a id="back-link" href="index.html">Back</a>
     <canvas id="gameCanvas"></canvas>
-    <div id="controls">
-        <div class="control-row">
-            <div class="control-btn" id="up">↑</div>
-        </div>
-        <div class="control-row lr-row">
-            <div class="control-btn" id="left">←</div>
-            <div class="control-btn" id="right">→</div>
-        </div>
-        <div class="control-row">
-            <div class="control-btn" id="down">↓</div>
-        </div>
-    </div>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -183,6 +117,8 @@
         let powerTimer = 0;
         const powerDuration = 600; // ~10s at 60fps
         let gameOver = false;
+        let mouthTimer = 0;
+        const radius = 0.5 - 0.0001; // Slightly less to avoid floating point issues
 
         // Controls
         let nextDir = pacman.dir;
@@ -192,12 +128,6 @@
             if (e.key === 'ArrowLeft') nextDir = 'left';
             if (e.key === 'ArrowRight') nextDir = 'right';
         });
-
-        // On-screen arrow buttons for mobile
-        document.getElementById('up').addEventListener('touchstart', () => { nextDir = 'up'; });
-        document.getElementById('down').addEventListener('touchstart', () => { nextDir = 'down'; });
-        document.getElementById('left').addEventListener('touchstart', () => { nextDir = 'left'; });
-        document.getElementById('right').addEventListener('touchstart', () => { nextDir = 'right'; });
 
         // Swipe for mobile
         let touchStartX = 0, touchStartY = 0;
@@ -237,11 +167,11 @@
             return maze[ty][tx] !== 1 && maze[ty][tx] !== 4;
         }
 
-        function moveEntity(entity, dir) {
-            if (dir === 'up') entity.y -= entity.speed;
-            if (dir === 'down') entity.y += entity.speed;
-            if (dir === 'left') entity.x -= entity.speed;
-            if (dir === 'right') entity.x += entity.speed;
+        function moveEntity(entity, dir, move_amount) {
+            if (dir === 'up') entity.y -= move_amount;
+            if (dir === 'down') entity.y += move_amount;
+            if (dir === 'left') entity.x -= move_amount;
+            if (dir === 'right') entity.x += move_amount;
 
             // Tunnel wrap-around
             if (entity.x < -0.5) entity.x = cols - 0.5;
@@ -254,9 +184,47 @@
             // Attempt direction change if possible
             if (canMove(pacman.x, pacman.y, nextDir, pacman.speed)) pacman.dir = nextDir;
 
-            // Move Pacman only if clear in current direction
-            if (canMove(pacman.x, pacman.y, pacman.dir, pacman.speed)) {
-                moveEntity(pacman, pacman.dir);
+            // Calculate move_amount for Pacman
+            let move_amount = pacman.speed;
+            const ty = Math.floor(pacman.y);
+            const tx = Math.floor(pacman.x);
+            if (pacman.dir === 'right') {
+                const right_edge = pacman.x + radius;
+                const tx_front = Math.floor(right_edge + 0.0001);
+                if (tx_front < cols && (maze[ty][tx_front] === 1 || maze[ty][tx_front] === 4)) {
+                    const max_x = tx_front - radius;
+                    move_amount = Math.max(0, Math.min(pacman.speed, max_x - pacman.x));
+                }
+            } else if (pacman.dir === 'left') {
+                const left_edge = pacman.x - radius;
+                const tx_front = Math.floor(left_edge - 0.0001);
+                if (tx_front >= 0 && (maze[ty][tx_front] === 1 || maze[ty][tx_front] === 4)) {
+                    const min_x = tx_front + 1 + radius;
+                    move_amount = Math.max(0, Math.min(pacman.speed, pacman.x - min_x));
+                }
+            } else if (pacman.dir === 'down') {
+                const bottom_edge = pacman.y + radius;
+                const ty_front = Math.floor(bottom_edge + 0.0001);
+                if (ty_front < rows && (maze[ty_front][tx] === 1 || maze[ty_front][tx] === 4)) {
+                    const max_y = ty_front - radius;
+                    move_amount = Math.max(0, Math.min(pacman.speed, max_y - pacman.y));
+                }
+            } else if (pacman.dir === 'up') {
+                const top_edge = pacman.y - radius;
+                const ty_front = Math.floor(top_edge - 0.0001);
+                if (ty_front >= 0 && (maze[ty_front][tx] === 1 || maze[ty_front][tx] === 4)) {
+                    const min_y = ty_front + 1 + radius;
+                    move_amount = Math.max(0, Math.min(pacman.speed, pacman.y - min_y));
+                }
+            }
+
+            moveEntity(pacman, pacman.dir, move_amount);
+
+            // Snap to center
+            if (pacman.dir === 'left' || pacman.dir === 'right') {
+                pacman.y = Math.round(pacman.y * 2) / 2;
+            } else if (pacman.dir === 'up' || pacman.dir === 'down') {
+                pacman.x = Math.round(pacman.x * 2) / 2;
             }
 
             // Eat dots/power pellets
@@ -282,7 +250,7 @@
                 }
             }
 
-            // Move ghosts
+            // Move ghosts with boundary check
             ghosts.forEach(ghost => {
                 let dirs = ['up', 'down', 'left', 'right'].filter(d => d !== oppositeDir(ghost.dir) && canMove(ghost.x, ghost.y, d, ghost.speed));
                 if (dirs.length === 0) dirs = [oppositeDir(ghost.dir)];
@@ -296,8 +264,48 @@
                 }
 
                 ghost.dir = dirs[0] || ghost.dir;
-                if (canMove(ghost.x, ghost.y, ghost.dir, ghost.speed)) {
-                    moveEntity(ghost, ghost.dir);
+
+                // Calculate move_amount for ghost
+                let ghost_move_amount = ghost.speed;
+                const ghost_ty = Math.floor(ghost.y);
+                const ghost_tx = Math.floor(ghost.x);
+                if (ghost.dir === 'right') {
+                    const ghost_right_edge = ghost.x + radius;
+                    const ghost_tx_front = Math.floor(ghost_right_edge + 0.0001);
+                    if (ghost_tx_front < cols && (maze[ghost_ty][ghost_tx_front] === 1 || maze[ghost_ty][ghost_tx_front] === 4)) {
+                        const ghost_max_x = ghost_tx_front - radius;
+                        ghost_move_amount = Math.max(0, Math.min(ghost.speed, ghost_max_x - ghost.x));
+                    }
+                } else if (ghost.dir === 'left') {
+                    const ghost_left_edge = ghost.x - radius;
+                    const ghost_tx_front = Math.floor(ghost_left_edge - 0.0001);
+                    if (ghost_tx_front >= 0 && (maze[ghost_ty][ghost_tx_front] === 1 || maze[ghost_ty][ghost_tx_front] === 4)) {
+                        const ghost_min_x = ghost_tx_front + 1 + radius;
+                        ghost_move_amount = Math.max(0, Math.min(ghost.speed, ghost.x - ghost_min_x));
+                    }
+                } else if (ghost.dir === 'down') {
+                    const ghost_bottom_edge = ghost.y + radius;
+                    const ghost_ty_front = Math.floor(ghost_bottom_edge + 0.0001);
+                    if (ghost_ty_front < rows && (maze[ghost_ty_front][ghost_tx] === 1 || maze[ghost_ty_front][ghost_tx] === 4)) {
+                        const ghost_max_y = ghost_ty_front - radius;
+                        ghost_move_amount = Math.max(0, Math.min(ghost.speed, ghost_max_y - ghost.y));
+                    }
+                } else if (ghost.dir === 'up') {
+                    const ghost_top_edge = ghost.y - radius;
+                    const ghost_ty_front = Math.floor(ghost_top_edge - 0.0001);
+                    if (ghost_ty_front >= 0 && (maze[ghost_ty_front][ghost_tx] === 1 || maze[ghost_ty_front][ghost_tx] === 4)) {
+                        const ghost_min_y = ghost_ty_front + 1 + radius;
+                        ghost_move_amount = Math.max(0, Math.min(ghost.speed, ghost.y - ghost_min_y));
+                    }
+                }
+
+                moveEntity(ghost, ghost.dir, ghost_move_amount);
+
+                // Snap to center for ghosts
+                if (ghost.dir === 'left' || ghost.dir === 'right') {
+                    ghost.y = Math.round(ghost.y * 2) / 2;
+                } else if (ghost.dir === 'up' || ghost.dir === 'down') {
+                    ghost.x = Math.round(ghost.x * 2) / 2;
                 }
             });
 
@@ -368,7 +376,7 @@
         }
 
         function drawPacman(x, y, dir, mouthOpen) {
-            const px = x * tileSize, py = y * tileSize;
+            const px = x * tileSize + tileSize / 2, py = y * tileSize + tileSize / 2;
             ctx.fillStyle = '#FFEB3B';
             ctx.beginPath();
             let startAngle = 0, endAngle = Math.PI * 2;
@@ -390,7 +398,7 @@
         }
 
         function drawGhost(x, y, color, scared) {
-            const px = x * tileSize, py = y * tileSize;
+            const px = x * tileSize + tileSize / 2, py = y * tileSize + tileSize / 2;
             ctx.fillStyle = scared ? '#0000FF' : color;
             ctx.beginPath();
             ctx.arc(px, py - tileSize / 4, tileSize / 2 - 2, Math.PI, 0, false);
@@ -443,7 +451,10 @@
 
             // Draw Pacman
             drawPacman(pacman.x, pacman.y, pacman.dir, pacman.mouthOpen);
-            pacman.mouthOpen = !pacman.mouthOpen;
+            mouthTimer++;
+            if (mouthTimer % 5 === 0) {
+                pacman.mouthOpen = !pacman.mouthOpen;
+            }
 
             // Draw ghosts
             ghosts.forEach(g => drawGhost(g.x, g.y, g.color, g.scared));
