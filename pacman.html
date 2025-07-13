@@ -11,6 +11,7 @@
             position: relative; 
             font-family: 'Arial', sans-serif;
             color: white;
+            overflow: hidden; /* Prevent scrolling on all devices */
         }
         canvas { 
             display: block; 
@@ -19,48 +20,94 @@
         }
         #back-link {
             position: absolute;
-            top: 10px;
-            left: 10px;
+            top: -50px;
+            left: 18px;
             padding: 10px 20px;
-            background-color: #FF5722; /* Red-orange */
+            background-color: #FFC107; /* Yellow Lego brick */
+            border: 3px solid #FFA000; /* Darker yellow border */
             border-radius: 10px;
             text-decoration: none;
             color: white;
             font-size: 18px;
-            z-index: 5; /* Above other elements */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* 3D Lego lift */
+            transition: background-color 0.2s, transform 0.3s;
+            z-index: 10;
+        }
+        #back-link:hover {
+            background-color: #FFEB3B; /* Brighter on hover */
+            transform: scale(1.05);
+        }
+        #back-link:active {
+            transform: scale(0.95); /* Press down effect */
+        }
+        #back-link::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 4px;
+            background: repeating-linear-gradient(to right, #FFC107, #FFC107 2px, transparent 2px, transparent 4px); /* Mini studs */
         }
         #controls {
             display: flex;
+            flex-direction: column;
+            align-items: center;
             justify-content: center;
             margin: 0 auto;
-            max-width: 300px;
-            position: fixed; /* Fixed at bottom for easy thumb reach */
+            max-width: 300px; /* Wider for spacing */
+            position: fixed; /* Fixed at bottom */
             bottom: 20px;
             left: 0;
             right: 0;
             z-index: 5;
         }
+        .control-row {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+        .lr-row {
+            justify-content: center; /* Closer together */
+            max-width: 100%; /* Use full width for better spacing */
+            gap: 75px;
+        }
         .control-btn {
-            width: 80px; /* Larger for mobile */
-            height: 80px;
-            background-color: #FFC107; /* Yellow */
-            margin: 5px;
-            border-radius: 15px;
+            width: 60px;
+            height: 60px;
+            background-color: #FFC107; /* Yellow Lego brick */
+            margin: 5px; /* Symmetric margins */
+            border: 3px solid #FFA000; /* Darker yellow border */
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 40px;
+            font-size: 30px;
             cursor: pointer;
             user-select: none;
-            transition: background-color 0.2s; /* Feedback on tap */
+            transition: background-color 0.2s, transform 0.2s; /* Feedback on tap */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* 3D Lego lift */
         }
         .control-btn:active {
-            background-color: #FFA000; /* Darker on press */
+            background-color: #FFEB3B; /* Brighter on press */
+            transform: scale(0.95); /* Press down effect */
         }
-        .control-row { display: flex; }
+        .control-btn::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            width: 20px;
+            height: 4px;
+            background: repeating-linear-gradient(to right, #FFC107, #FFC107 2px, transparent 2px, transparent 4px); /* Mini studs */
+        }
         /* Responsive adjustments */
         @media (max-width: 600px) {
-            .control-btn { width: 60px; height: 60px; font-size: 30px; margin: 3px; }
+            .control-btn { width: 50px; height: 50px; font-size: 24px; margin: 3px; }
+            .lr-row { max-width: 90%; gap: 65px; }
+        }
+        @media (min-width: 769px) {
+            #controls { display: none; } /* Hide on-screen controls on desktop */
         }
     </style>
 </head>
@@ -71,10 +118,12 @@
         <div class="control-row">
             <div class="control-btn" id="up">↑</div>
         </div>
-        <div class="control-row">
+        <div class="control-row lr-row">
             <div class="control-btn" id="left">←</div>
-            <div class="control-btn" id="down">↓</div>
             <div class="control-btn" id="right">→</div>
+        </div>
+        <div class="control-row">
+            <div class="control-btn" id="down">↓</div>
         </div>
     </div>
     <script>

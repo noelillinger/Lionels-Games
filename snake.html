@@ -22,8 +22,8 @@
         }
         #back-link {
             position: absolute;
-            top: 10px;
-            left: 10px;
+            top: -50px;
+            left: 18px;
             padding: 10px 20px;
             background-color: #FFC107; /* Yellow Lego brick */
             border: 3px solid #FFA000; /* Darker yellow border */
@@ -89,7 +89,7 @@
         .lr-row {
             justify-content: center; /* Closer together */
             max-width: 100%; /* Use full width for better spacing */
-            gap: 60px;
+            gap: 75px;
         }
         .control-btn {
             width: 60px;
@@ -128,7 +128,7 @@
                 font-size: 14px; /* Smaller font if needed */
             }
             .control-btn { width: 50px; height: 50px; font-size: 24px; margin: 3px; }
-            .lr-row { max-width: 90%; gap: 50px; }
+            .lr-row { max-width: 90%; gap: 65px; }
         }
         @media (min-width: 769px) {
             #controls { display: none; } /* Hide on-screen controls on desktop */
@@ -140,8 +140,9 @@
     <canvas id="gameCanvas"></canvas>
     <div id="start-message">
         <p>Schlängel los und friss so viele Legos auf, wie du kannst.</p>
-        <p>Auf Mobile: Steuere mit den Buttons oder Swipe. Tippe zum Starten!<br>Auf Desktop: Steuere mit Pfeiltasten, Space zum Starten/Pausieren.</p>
-        <p>Tap to start!</p>
+        <p>Auf Mobile: Steuere mit den Buttons oder Swipe.</p>
+        <p>Auf Desktop: Steuere mit Pfeiltasten, nutze Space zum Starten/Pausieren.</p>
+        <p>Zum starten auf das Spielfeld!</p>
     </div>
     <div id="controls">
         <div class="control-row">
