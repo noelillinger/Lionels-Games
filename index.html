@@ -4,73 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kids' Fun Games</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
-            font-family: 'Comic Sans MS', cursive, sans-serif; /* Playful font */
+            font-family: 'Fredoka One', cursive; /* Fun, bubbly font for kids */
             background-color: #2196F3; /* Bright blue */
             color: white;
             text-align: center;
-        }
-        header {
-            background-color: #FFEB3B; /* Yellow */
-            padding: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        nav ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
             display: flex;
-            justify-content: center;
-            flex-wrap: wrap; /* Responsive for mobile */
-        }
-        nav li {
-            margin: 10px;
-        }
-        nav a {
-            color: #2196F3;
-            text-decoration: none;
-            font-size: 18px;
-            padding: 10px 20px;
-            background-color: white;
-            border-radius: 20px;
-            transition: background-color 0.3s;
-        }
-        nav a:hover {
-            background-color: #FFC107; /* Orange hover */
-        }
-        main {
-            padding: 20px;
+            flex-direction: column;
+            height: 100vh; /* Full viewport height */
+            justify-content: flex-start; /* Start from top */
         }
         h1 {
             color: #FF5722; /* Red-orange */
+            margin-top: 20px; /* A bit of space from top */
+        }
+        p {
+            margin: 10px 0;
+        }
+        .games {
+            flex: 1; /* Take up remaining space */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around; /* Evenly space links to the bottom */
+            align-items: center;
+            padding: 20px;
+        }
+        .games a {
+            color: #2196F3;
+            text-decoration: none;
+            font-size: 24px; /* Larger for kids */
+            padding: 15px 30px;
+            background-color: white;
+            border-radius: 30px;
+            margin: 10px 0; /* Vertical spacing */
+            transition: background-color 0.3s;
+            width: 80%; /* Wide buttons */
+            max-width: 300px; /* Cap width for larger screens */
+        }
+        .games a:hover {
+            background-color: #FFC107; /* Orange hover */
         }
         /* Responsive adjustments */
         @media (max-width: 600px) {
-            nav ul {
-                flex-direction: column;
-            }
-            nav a {
-                font-size: 16px;
-                padding: 8px 16px;
+            .games a {
+                font-size: 20px;
+                padding: 12px 24px;
             }
         }
     </style>
 </head>
 <body>
-    <header>
-        <nav>
-            <ul>
-                <li><a href="space-shooter.html">Lionel's Space Shooter</a></li>
-                <li><a href="snake.html">Snake</a></li>
-                <li><a href="pacman.html">Pacman</a></li>
-            </ul>
-        </nav>
-    </header>
-    <main>
-        <h1>Welcome to Kids' Fun Games!</h1>
-        <p>Choose a game from the menu above and start playing!</p>
-    </main>
+    <h1>Welcome to Kids' Fun Games!</h1>
+    <p>Pick a game below and start playing!</p>
+    <div class="games">
+        <a href="space-shooter.html">Lionel's Space Shooter</a>
+        <a href="snake.html">Snake</a>
+        <a href="pacman.html">Pacman</a>
+    </div>
 </body>
 </html>
