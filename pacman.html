@@ -14,12 +14,11 @@
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const tileSize = 20; // Brick size for Lego feel
-        canvas.width = Math.min(window.innerWidth, 560); // 28 tiles wide (standard Pacman maze)
-        canvas.height = Math.min(window.innerHeight - 100, 620); // 31 tiles high, with space for score
-
-        const cols = canvas.width / tileSize;
-        const rows = canvas.height / tileSize;
+        const tileSize = Math.max(10, Math.min(Math.floor(window.innerWidth / 28), Math.floor((window.innerHeight - 100) / 31)));
+        canvas.width = 28 * tileSize;
+        canvas.height = 31 * tileSize;
+        const cols = 28;
+        const rows = 31;
 
         // Simple Pacman maze layout (1=wall, 0=dot path, 2=power pellet, 3=empty, 4=ghost house gate)
         const maze = [
@@ -58,10 +57,10 @@
 
         let pacman = { x: 13.5, y: 23, dir: 'left', mouthOpen: true, speed: 0.15 }; // Start position, speed in tiles/frame
         let ghosts = [
-            { x: 13.5, y: 11, color: '#FF0000', dir: 'up', scared: false }, // Red (Blindy-like ninja)
-            { x: 12, y: 14, color: '#00FFFF', dir: 'right', scared: false }, // Cyan (Inky-like)
-            { x: 13, y: 14, color: '#FFB852', dir: 'left', scared: false }, // Orange (Clyde-like)
-            { x: 15, y: 14, color: '#FF69B4', dir: 'right', scared: false } // Pink (Pinky-like)
+            { x: 13.5, y: 11, color: '#FF0000', dir: 'up', scared: false, speed: 0.12 }, // Red (Blindy-like ninja)
+            { x: 12, y: 14, color: '#00FFFF', dir: 'right', scared: false, speed: 0.12 }, // Cyan (Inky-like)
+            { x: 13, y: 14, color: '#FFB852', dir: 'left', scared: false, speed: 0.12 }, // Orange (Clyde-like)
+            { x: 15, y: 14, color: '#FF69B4', dir: 'right', scared: false, speed: 0.12 } // Pink (Pinky-like)
         ];
         let score = 0;
         let lives = 3;
@@ -152,7 +151,7 @@
                     if (ghost.scared) {
                         // Eat ghost
                         score += 200;
-                        ghosts[i] = { x: 13.5, y: 14, color: ghost.color, dir: 'up', scared: false }; // Respawn
+                        ghosts[i] = { x: 13.5, y: 14, color: ghost.color, dir: 'up', scared: false, speed: 0.12 }; // Respawn
                     } else {
                         // Lose life
                         lives--;
@@ -172,15 +171,16 @@
             if (dir === 'left') nx -= 0.1;
             if (dir === 'right') nx += 0.1;
             const tx = Math.floor(nx), ty = Math.floor(ny);
-            if (tx < 0 || tx >= cols || ty < 0 || ty >= rows) return true; // Tunnel edges
+            if (ty < 0 || ty >= rows) return false;
+            if (tx < 0 || tx >= cols) return true;  // Tunnel for horizontal
             return maze[ty][tx] !== 1 && maze[ty][tx] !== 4; // Not wall or gate
         }
 
         function moveEntity(entity, dir) {
-            if (dir === 'up') entity.y -= entity.speed || 0.1; // Ghosts slower
-            if (dir === 'down') entity.y += entity.speed || 0.1;
-            if (dir === 'left') entity.x -= entity.speed || 0.1;
-            if (dir === 'right') entity.x += entity.speed || 0.1;
+            if (dir === 'up') entity.y -= entity.speed;
+            if (dir === 'down') entity.y += entity.speed;
+            if (dir === 'left') entity.x -= entity.speed;
+            if (dir === 'right') entity.x += entity.speed;
 
             // Tunnel wrap-around
             if (entity.x < -0.5) entity.x = cols - 0.5;
@@ -206,10 +206,10 @@
         function resetPositions() {
             pacman = { x: 13.5, y: 23, dir: 'left', mouthOpen: true, speed: 0.15 };
             ghosts = [
-                { x: 13.5, y: 11, color: '#FF0000', dir: 'up', scared: false },
-                { x: 12, y: 14, color: '#00FFFF', dir: 'right', scared: false },
-                { x: 13, y: 14, color: '#FFB852', dir: 'left', scared: false },
-                { x: 15, y: 14, color: '#FF69B4', dir: 'right', scared: false }
+                { x: 13.5, y: 11, color: '#FF0000', dir: 'up', scared: false, speed: 0.12 },
+                { x: 12, y: 14, color: '#00FFFF', dir: 'right', scared: false, speed: 0.12 },
+                { x: 13, y: 14, color: '#FFB852', dir: 'left', scared: false, speed: 0.12 },
+                { x: 15, y: 14, color: '#FF69B4', dir: 'right', scared: false, speed: 0.12 }
             ];
             powerMode = false;
             powerTimer = 0;
@@ -289,9 +289,10 @@
             // Ninjago ninja mask touch: Add a small band
             ctx.strokeStyle = 'gold'; // Elemental energy
             ctx.lineWidth = 1;
+            ctx.lineWidth = 2; // fix if needed
             ctx.beginPath();
             ctx.moveTo(px - tileSize / 2 + 2, py - tileSize / 2 + 2);
-            ctx.lineTo(px + tileSize / 2 - 2, py - tileSize /  / 2 + 2);
+            ctx.lineTo(px + tileSize / 2 - 2, py - tileSize / 2 + 2);
             ctx.stroke();
         }
 
