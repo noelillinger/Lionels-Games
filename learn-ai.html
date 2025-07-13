@@ -14,6 +14,7 @@
             text-align: center;
             line-height: 1.4;
             overflow-x: hidden;
+            position: relative; /* For absolute positioning of lang button */
         }
         header {
             background-color: #000; /* Black hero like Apple promotions */
@@ -61,8 +62,9 @@
             z-index: 2;
         }
         #lang-toggle {
-            display: inline-block;
-            margin: 20px auto;
+            position: absolute;
+            top: 20px;
+            left: 20px;
             padding: 10px 20px;
             background-color: #0071e3; /* Apple blue */
             color: #fff;
@@ -81,7 +83,7 @@
             padding: 40px 20px;
         }
         details {
-            margin: 20px 0;
+            margin: 10px 0; /* Reduced spacing between drop downs */
             border-bottom: 1px solid #d2d2d7; /* Light divider */
             text-align: left;
         }
@@ -165,7 +167,7 @@
             header p { font-size: 20px; }
             summary { font-size: 24px; }
             details p { font-size: 16px; }
-            .cta { padding: 15px 30px; } /* Adjust padding on mobile */
+            .cta { padding: 15px 30px; } /* Reduced padding on mobile to avoid edge hits */
         }
     </style>
 </head>
