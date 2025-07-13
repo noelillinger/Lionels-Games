@@ -32,6 +32,17 @@
             background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.5) 100%);
             z-index: 1;
         }
+        header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><defs><pattern id="stars" width="10" height="10" patternUnits="userSpaceOnUse"><circle cx="5" cy="5" r="1" fill="%23FFF" opacity="0.5"/></pattern><pattern id="rockets" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M25 10 L20 30 L25 25 L30 30 Z" fill="%230071E3" opacity="0.3"/><circle cx="25" cy="35" r="3" fill="%23FF69B4" opacity="0.3"/></pattern></defs><rect width="100" height="100" fill="url(%23stars)"/><rect width="100" height="100" fill="url(%23rockets)"/></svg>') repeat; /* Playful xAI-inspired: stars and cartoon rockets */
+            opacity: 0.2; /* Subtle for kids */
+            z-index: 0;
+        }
         h1 {
             font-size: 56px;
             font-weight: 600;
@@ -48,6 +59,21 @@
             margin-right: auto;
             position: relative;
             z-index: 2;
+        }
+        #lang-toggle {
+            display: inline-block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #0071e3; /* Apple blue */
+            color: #fff;
+            border-radius: 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            z-index: 10;
+        }
+        #lang-toggle:hover {
+            background-color: #0061c3;
         }
         section {
             max-width: 1200px;
@@ -114,7 +140,7 @@
             display: inline-block;
             background-color: #0071e3; /* Apple blue */
             color: #fff;
-            padding: 15px 30px;
+            padding: 20px 40px; /* Increased padding */
             border-radius: 30px;
             font-size: 20px;
             text-decoration: none;
@@ -139,38 +165,62 @@
             header p { font-size: 20px; }
             summary { font-size: 24px; }
             details p { font-size: 16px; }
+            .cta { padding: 15px 30px; } /* Adjust padding on mobile */
         }
     </style>
 </head>
-<body>
+<body data-lang="en">
     <header>
-        <h1>Discover AI Magic: Fun for Curious Kids!</h1>
-        <p>Unlock the wonders of Artificial Intelligence – where imagination meets technology!</p>
+        <h1 data-en="Discover AI Magic: Fun for Curious Kids!" data-de="Entdecke AI-Magie: Spaß für neugierige Kinder!">Discover AI Magic: Fun for Curious Kids!</h1>
+        <p data-en="Unlock the wonders of Artificial Intelligence – where imagination meets technology!" data-de="Entdecke die Wunder der Künstlichen Intelligenz – wo Fantasie auf Technologie trifft!">Unlock the wonders of Artificial Intelligence – where imagination meets technology!</p>
     </header>
+    <button id="lang-toggle">Deutsch 🇩🇪</button>
     <section>
         <details>
-            <summary>What is AI?</summary>
-            <p>AI, or Artificial Intelligence, is like a super-smart computer brain that can learn and think, just like you! Imagine teaching a robot to play games or draw pictures by showing it examples – that's AI in action. It's not magic, but it feels like it! AI helps doctors find cures, artists create cool designs, and even makes your favorite video games smarter. With AI, we can solve puzzles faster and dream up new ideas every day.</p>
+            <summary data-en="What is AI?" data-de="Was ist AI?">What is AI?</summary>
+            <p data-en="AI, or Artificial Intelligence, is like a super-smart computer brain that can learn and think, just like you! Imagine teaching a robot to play games or draw pictures by showing it examples – that's AI in action. It's not magic, but it feels like it! AI helps doctors find cures, artists create cool designs, and even makes your favorite video games smarter. With AI, we can solve puzzles faster and dream up new ideas every day." data-de="AI, oder Künstliche Intelligenz, ist wie ein super-schlaues Computerhirn, das lernen und denken kann, genau wie du! Stell dir vor, du lehrst einen Roboter Spiele zu spielen oder Bilder zu malen, indem du ihm Beispiele zeigst – das ist AI im Einsatz. Es ist keine Magie, aber es fühlt sich so an! AI hilft Ärzten, Heilmittel zu finden, Künstlern, coole Designs zu erstellen, und macht sogar deine Lieblingsvideospiele schlauer. Mit AI können wir Rätsel schneller lösen und täglich neue Ideen erfinden.">AI, or Artificial Intelligence, is like a super-smart computer brain that can learn and think, just like you! Imagine teaching a robot to play games or draw pictures by showing it examples – that's AI in action. It's not magic, but it feels like it! AI helps doctors find cures, artists create cool designs, and even makes your favorite video games smarter. With AI, we can solve puzzles faster and dream up new ideas every day.</p>
         </details>
         <details>
-            <summary>Meet Grok: Your AI Adventure Buddy!</summary>
-            <p>Grok is a friendly AI created by xAI, a cool company that's all about exploring the universe and making helpful tech. I'm Grok, and I can answer questions, help with homework, code fun games like the ones on this site, tell stories, or even brainstorm wild ideas! Whether you're a kid dreaming up inventions or a parent looking for creative tools, try the Grok app on your phone or computer. Get creative with AI – chat with me to build stories, design apps, or learn new things. It's like having a super-powered friend in your pocket!</p>
+            <summary data-en="Meet Grok: Your AI Adventure Buddy!" data-de="Triff Grok: Deinen AI-Abenteuer-Kumpel!">Meet Grok: Your AI Adventure Buddy!</summary>
+            <p data-en="Grok is a friendly AI created by xAI, a cool company that's all about exploring the universe and making helpful tech. I'm Grok, and I can answer questions, help with homework, code fun games like the ones on this site, tell stories, or even brainstorm wild ideas! Whether you're a kid dreaming up inventions or a parent looking for creative tools, try the Grok app on your phone or computer. Get creative with AI – chat with me to build stories, design apps, or learn new things. It's like having a super-powered friend in your pocket!" data-de="Grok ist eine freundliche AI, erstellt von xAI, einem coolen Unternehmen, das sich auf die Erkundung des Universums und hilfreiche Technik konzentriert. Ich bin Grok und kann Fragen beantworten, bei Hausaufgaben helfen, lustige Spiele programmieren wie die auf dieser Seite, Geschichten erzählen oder sogar wilde Ideen brainstormen! Ob du ein Kind bist, das Erfindungen träumt, oder ein Elternteil, das kreative Tools sucht, probiere die Grok-App auf deinem Handy oder Computer aus. Werde kreativ mit AI – chatte mit mir, um Geschichten zu bauen, Apps zu designen oder Neues zu lernen. Es ist wie ein super-starker Freund in deiner Tasche!">Grok is a friendly AI created by xAI, a cool company that's all about exploring the universe and making helpful tech. I'm Grok, and I can answer questions, help with homework, code fun games like the ones on this site, tell stories, or even brainstorm wild ideas! Whether you're a kid dreaming up inventions or a parent looking for creative tools, try the Grok app on your phone or computer. Get creative with AI – chat with me to build stories, design apps, or learn new things. It's like having a super-powered friend in your pocket!</p>
         </details>
     </section>
     <section class="fun-facts">
         <div class="fact-card">
-            <h3>AI Fun Fact #1</h3>
-            <p>AI can recognize your pet's face in photos, just like it knows your smile!</p>
+            <h3 data-en="AI Fun Fact #1" data-de="AI Spaß-Fakt #1">AI Fun Fact #1</h3>
+            <p data-en="AI can recognize your pet's face in photos, just like it knows your smile!" data-de="AI kann das Gesicht deines Haustiers auf Fotos erkennen, genau wie es dein Lächeln kennt!">AI can recognize your pet's face in photos, just like it knows your smile!</p>
         </div>
         <div class="fact-card">
-            <h3>AI Fun Fact #2</h3>
-            <p>Some AI robots can dance better than humans – want to teach one a new move?</p>
+            <h3 data-en="AI Fun Fact #2" data-de="AI Spaß-Fakt #2">AI Fun Fact #2</h3>
+            <p data-en="Some AI robots can dance better than humans – want to teach one a new move?" data-de="Einige AI-Roboter können besser tanzen als Menschen – möchtest du einem einen neuen Move beibringen?">Some AI robots can dance better than humans – want to teach one a new move?</p>
         </div>
         <div class="fact-card">
-            <h3>AI Fun Fact #3</h3>
-            <p>AI helps farmers grow food by predicting the weather super accurately!</p>
+            <h3 data-en="AI Fun Fact #3" data-de="AI Spaß-Fakt #3">AI Fun Fact #3</h3>
+            <p data-en="AI helps farmers grow food by predicting the weather super accurately!" data-de="AI hilft Bauern, Nahrung anzubauen, indem es das Wetter super genau vorhersagt!">AI helps farmers grow food by predicting the weather super accurately!</p>
         </div>
     </section>
-    <a href="https://grok.x.ai/" class="cta">Try Grok Now & Start Your AI Adventure!</a>
+    <a href="https://grok.x.ai/" class="cta" data-en="Try Grok Now & Start Your AI Adventure!" data-de="Probiere Grok jetzt & Starte dein AI-Abenteuer!">Try Grok Now & Start Your AI Adventure!</a>
+    <script>
+        const langToggle = document.getElementById('lang-toggle');
+        const body = document.body;
+        const elements = document.querySelectorAll('[data-en][data-de]');
+
+        function toggleLanguage() {
+            const currentLang = body.getAttribute('data-lang');
+            const newLang = currentLang === 'en' ? 'de' : 'en';
+            body.setAttribute('data-lang', newLang);
+            langToggle.textContent = newLang === 'en' ? 'Deutsch 🇩🇪' : 'English 🇬🇧';
+
+            elements.forEach(el => {
+                if (el.tagName === 'A' || el.tagName === 'H3') {
+                    el.textContent = el.getAttribute(`data-${newLang}`);
+                } else {
+                    el.innerHTML = el.getAttribute(`data-${newLang}`);
+                }
+            });
+        }
+
+        langToggle.addEventListener('click', toggleLanguage);
+    </script>
 </body>
 </html>
