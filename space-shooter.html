@@ -7,26 +7,65 @@
     <style>
         body { margin: 0; background-color: #2196F3; } /* Match site theme */
         canvas { display: block; margin: 0 auto; background: black; }
+        #back-link {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 5px 10px;
+            background-color: #228B22; /* Minecraft grass green */
+            border: 2px solid #000; /* Pixel border */
+            color: #FFF;
+            font-family: 'Courier New', monospace; /* Pixel font feel */
+            font-size: 16px;
+            text-decoration: none;
+            cursor: pointer;
+            image-rendering: pixelated; /* Minecraft style */
+            z-index: 10;
+        }
+        #pause-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            background-color: #A0522D; /* Minecraft dirt brown */
+            border: 2px solid #000;
+            color: #FFF;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            cursor: pointer;
+            image-rendering: pixelated;
+            z-index: 10;
+        }
     </style>
 </head>
 <body>
+    <a id="back-link" href="index.html">Back</a>
     <canvas id="gameCanvas"></canvas>
+    <button id="pause-btn">Pause</button>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        let player = { x: canvas.width / 2 - 25, y: canvas.height - 160, width: 50, height: 50 }; // Bottom offset like iOS
+        let player = { x: canvas.width / 2 - 25, y: canvas.height - 160, width: 50, height: 50 }; // Bottom offset
         let bullets = [];
         let enemies = [];
         let stars = [];
         let score = 0;
         let highScore = 0;
         let lastShotTime = 0;
-        const shootInterval = 500; // ms
-        let gameOverLabel = { text: '', timer: 0 };
+        const shootInterval = 500; // ms for auto-shoot
+        let gameOverLabel = { text: '', active: false };
         let isDragging = false;
+        let isPaused = false;
+        let isGameOver = false;
+        let boss = null;
+        const bossHPMax = 35;
+        let bossHP = bossHPMax;
+        let bossLastShot = 0;
+        const bossShootInterval = 1000; // Boss shoots every 1s
+        let bossProjectiles = [];
 
         // Create initial stars
         for (let i = 0; i < 30; i++) {
@@ -39,16 +78,34 @@
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
                 size: size,
-                speed: Math.random() * 20 + 20 // Duration 20-40s equivalent speed
+                speed: Math.random() * 20 + 20
             });
         }
 
-        // Mouse/Touch events
+        // Keyboard events for desktop
+        const keys = {};
+        document.addEventListener('keydown', e => {
+            keys[e.code] = true;
+            if (e.code === 'Space') shoot();
+        });
+        document.addEventListener('keyup', e => keys[e.code] = false);
+
+        // Mouse/Touch events for mobile
         canvas.addEventListener('mousedown', () => { isDragging = true; shoot(); });
         canvas.addEventListener('mousemove', movePlayer);
         canvas.addEventListener('mouseup', () => isDragging = false);
-        canvas.addEventListener('touchstart', (e) => { movePlayer(e.touches[0]); shoot(); });
+        canvas.addEventListener('touchstart', (e) => { 
+            if (isGameOver) {
+                resetGame();
+                return;
+            }
+            movePlayer(e.touches[0]); 
+            shoot(); 
+        });
         canvas.addEventListener('touchmove', (e) => { e.preventDefault(); movePlayer(e.touches[0]); });
+        canvas.addEventListener('click', () => {
+            if (isGameOver) resetGame();
+        });
 
         function movePlayer(e) {
             if (!isDragging && e.type === 'mousemove') return;
@@ -57,13 +114,19 @@
             player.x = Math.max(0, Math.min(player.x, canvas.width - player.width));
         }
 
+        // Pause button
+        document.getElementById('pause-btn').addEventListener('click', () => {
+            isPaused = !isPaused;
+            document.getElementById('pause-btn').textContent = isPaused ? 'Resume' : 'Pause';
+        });
+
         function shoot() {
             bullets.push({
                 x: player.x + player.width / 2 - 2.5,
                 y: player.y,
                 width: 5,
                 height: 10,
-                speed: 500 / 60 // px per frame
+                speed: 500 / 60
             });
         }
 
@@ -78,14 +141,70 @@
             });
         }
 
+        function spawnBoss() {
+            boss = {
+                x: canvas.width / 2 - 75,
+                y: 100,
+                width: 150,
+                height: 150,
+                speed: 100 / 60, // Horizontal speed
+                dir: 1 // 1 right, -1 left
+            };
+            enemies = []; // Clear regular enemies
+        }
+
+        function updateBoss() {
+            // Move side to side
+            boss.x += boss.speed * boss.dir;
+            if (boss.x <= 0 || boss.x + boss.width >= canvas.width) boss.dir *= -1;
+
+            // Shoot projectiles
+            const now = Date.now();
+            if (now - bossLastShot > bossShootInterval) {
+                bossProjectiles.push({
+                    x: boss.x + boss.width / 2 - 10,
+                    y: boss.y + boss.height,
+                    width: 20,
+                    height: 20,
+                    speed: 300 / 60 // Faster down
+                });
+                bossLastShot = now;
+            }
+
+            // Update boss projectiles
+            bossProjectiles = bossProjectiles.filter(p => {
+                p.y += p.speed;
+                return p.y < canvas.height + p.height;
+            });
+
+            // Boss projectile hits player
+            bossProjectiles.forEach((p, pi) => {
+                if (player.x < p.x + p.width && player.x + player.width > p.x &&
+                    player.y < p.y + p.height && player.y + player.height > p.y) {
+                    bossProjectiles.splice(pi, 1);
+                    score = 0;
+                    isGameOver = true;
+                    gameOverLabel = { text: 'Game Over! Tap/Click to Restart', active: true };
+                }
+            });
+        }
+
         function update() {
+            if (isPaused || isGameOver) return;
+
             const now = Date.now();
             if (now - lastShotTime > shootInterval) {
                 shoot();
                 lastShotTime = now;
             }
 
-            if (Math.random() < 0.02) spawnEnemy();
+            // Desktop movement
+            if (keys['ArrowLeft']) player.x = Math.max(0, player.x - 5);
+            if (keys['ArrowRight']) player.x = Math.min(canvas.width - player.width, player.x + 5);
+
+            if (score < 200 && Math.random() < 0.02) spawnEnemy();
+
+            if (score >= 200 && !boss) spawnBoss();
 
             // Update stars
             stars.forEach(star => {
@@ -99,35 +218,100 @@
                 return b.y > -b.height;
             });
 
-            // Update enemies
-            enemies = enemies.filter(e => {
-                e.y += e.speed;
-                return e.y < canvas.height + e.height;
-            });
+            if (boss) {
+                updateBoss();
 
-            // Collisions
-            bullets.forEach((b, bi) => {
-                enemies.forEach((e, ei) => {
-                    if (b.x < e.x + e.width && b.x + b.width > e.x &&
-                        b.y < e.y + e.height && b.y + b.height > e.y) {
+                // Bullets hit boss
+                bullets.forEach((b, bi) => {
+                    if (b.x < boss.x + boss.width && b.x + b.width > boss.x &&
+                        b.y < boss.y + boss.height && b.y + b.height > boss.y) {
                         bullets.splice(bi, 1);
-                        enemies.splice(ei, 1);
-                        score++;
-                        if (score > highScore) highScore = score;
+                        bossHP--;
+                        if (bossHP <= 0) {
+                            boss = null;
+                            bossHP = bossHPMax;
+                            score = 0; // Reset after boss win, or adjust
+                            gameOverLabel = { text: 'Boss Defeated! Tap/Click to Continue', active: true };
+                            isGameOver = true;
+                        }
                     }
                 });
-            });
+            } else {
+                // Update enemies
+                enemies = enemies.filter(e => {
+                    e.y += e.speed;
+                    return e.y < canvas.height + e.height;
+                });
 
-            enemies.forEach((e, ei) => {
-                if (player.x < e.x + e.width && player.x + player.width > e.x &&
-                    player.y < e.y + e.height && player.y + player.height > e.y) {
-                    score = 0;
-                    enemies = [];
-                    gameOverLabel = { text: 'Game Over! Tap to Restart', timer: 3000 };
-                }
-            });
+                // Collisions bullet-enemy
+                bullets.forEach((b, bi) => {
+                    enemies.forEach((e, ei) => {
+                        if (b.x < e.x + e.width && b.x + b.width > e.x &&
+                            b.y < e.y + e.height && b.y + b.height > e.y) {
+                            bullets.splice(bi, 1);
+                            enemies.splice(ei, 1);
+                            score++;
+                            if (score > highScore) highScore = score;
+                        }
+                    });
+                });
 
-            if (gameOverLabel.timer > 0) gameOverLabel.timer -= 1000 / 60;
+                // Enemy-player collision
+                enemies.forEach((e, ei) => {
+                    if (player.x < e.x + e.width && player.x + player.width > e.x &&
+                        player.y < e.y + e.height && player.y + player.height > e.y) {
+                        enemies = [];
+                        score = 0;
+                        isGameOver = true;
+                        gameOverLabel = { text: 'Game Over! Tap/Click to Restart', active: true };
+                    }
+                });
+            }
+        }
+
+        function drawPlayer() {
+            // Enderman head: Black square with purple eyes
+            ctx.fillStyle = '#000000'; // Black head
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            // Purple eyes
+            ctx.fillStyle = '#A020F0'; // Purple
+            ctx.fillRect(player.x + 10, player.y + 10, 10, 10); // Left eye
+            ctx.fillRect(player.x + 30, player.y + 10, 10, 10); // Right eye
+        }
+
+        function drawEnemy(e) {
+            // Minecraft space meteor: Gray stone with dark craters
+            ctx.fillStyle = '#808080'; // Gray base
+            ctx.fillRect(e.x, e.y, e.width, e.height);
+            // Craters: Dark circles
+            ctx.fillStyle = '#404040';
+            ctx.beginPath();
+            ctx.arc(e.x + e.width / 4, e.y + e.height / 4, e.width / 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(e.x + 3 * e.width / 4, e.y + 3 * e.height / 4, e.width / 6, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawBoss() {
+            // Minecraft Ender Dragon simplified: Large black body with purple accents
+            ctx.fillStyle = '#000000'; // Black body
+            ctx.fillRect(boss.x, boss.y, boss.width, boss.height);
+            // Purple wings/accents
+            ctx.fillStyle = '#A020F0';
+            ctx.fillRect(boss.x + 10, boss.y + 20, boss.width - 20, 20); // Horizontal bar
+            ctx.fillRect(boss.x + boss.width / 2 - 10, boss.y + 40, 20, boss.height - 60); // Vertical
+            // Eyes
+            ctx.fillRect(boss.x + 30, boss.y + 30, 20, 20);
+            ctx.fillRect(boss.x + boss.width - 50, boss.y + 30, 20, 20);
+        }
+
+        function drawBossProjectile(p) {
+            // Purple energy ball
+            ctx.fillStyle = '#A020F0';
+            ctx.beginPath();
+            ctx.arc(p.x + p.width / 2, p.y + p.height / 2, p.width / 2, 0, Math.PI * 2);
+            ctx.fill();
         }
 
         function draw() {
@@ -141,31 +325,50 @@
                 ctx.fill();
             });
 
-            // Player
-            ctx.fillStyle = 'white';
-            ctx.fillRect(player.x, player.y, player.width, player.height);
+            // Player (Enderman head)
+            drawPlayer();
 
-            // Bullets
+            // Bullets (red lasers)
             ctx.fillStyle = 'red';
             bullets.forEach(b => ctx.fillRect(b.x, b.y, b.width, b.height));
 
-            // Enemies
-            ctx.fillStyle = 'white';
-            enemies.forEach(e => ctx.fillRect(e.x, e.y, e.width, e.height));
+            // Enemies (meteors)
+            enemies.forEach(e => drawEnemy(e));
+
+            // Boss
+            if (boss) {
+                drawBoss();
+                bossProjectiles.forEach(p => drawBossProjectile(p));
+            }
 
             // Scores
             ctx.font = '20px Arial';
             ctx.fillStyle = 'white';
             ctx.textAlign = 'left';
-            ctx.fillText(`Score: ${score}`, 30, 30);
+            if (score < 200) {
+                ctx.fillText(`Score: ${score} / 200 to Boss`, 30, 30);
+            } else {
+                ctx.fillText(`Boss HP: ${bossHP}`, 30, 30);
+            }
             ctx.textAlign = 'right';
             ctx.fillText(`High: ${highScore}`, canvas.width - 30, 30);
 
             // Game Over
-            if (gameOverLabel.timer > 0) {
+            if (gameOverLabel.active) {
                 ctx.textAlign = 'center';
                 ctx.fillText(gameOverLabel.text, canvas.width / 2, canvas.height / 2);
             }
+        }
+
+        function resetGame() {
+            score = 0;
+            boss = null;
+            bossHP = bossHPMax;
+            bossProjectiles = [];
+            enemies = [];
+            bullets = [];
+            isGameOver = false;
+            gameOverLabel.active = false;
         }
 
         function gameLoop() {
