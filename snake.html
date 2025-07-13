@@ -22,9 +22,10 @@
         }
         #back-link {
             position: absolute;
-            top: 10px;
-            left: 10px;
-            padding: 10px 20px;
+            top: 0;
+            left: 0;
+            padding: 0;
+            margin: 0;
             background-color: #FF5722; /* Red-orange, Lego brick */
             border: 3px solid #F44336; /* Deeper red border */
             border-radius: 8px; /* Slight Lego round */
@@ -74,7 +75,7 @@
         }
         .lr-row {
             justify-content: space-between; /* Space apart left and right like keyboard */
-            max-width: 100%; /* Increased for more spacing */
+            max-width: calc(100% - 18px); /* Increased for more spacing */
         }
         .control-btn {
             width: 60px;
