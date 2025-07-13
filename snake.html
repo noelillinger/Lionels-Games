@@ -11,10 +11,11 @@
             position: relative; /* For absolute positioning */
             font-family: 'Arial', sans-serif;
             color: white;
+            overflow: hidden; /* Prevent scrolling on all devices */
         }
         canvas { 
             display: block; 
-            margin: 100px auto 20px; /* Further increased top padding for back button/score */
+            margin: 120px auto 20px; /* Top padding for back button/score */
             background: #4CAF50; /* Green baseplate */
             border: 4px solid #FFEB3B; /* Yellow Lego border for stunning frame */
             box-shadow: 0 0 20px rgba(255, 235, 59, 0.5); /* Glowing Lego effect */
@@ -43,13 +44,15 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background-color: rgba(0, 0, 0, 0.7);
-            padding: 30px;
+            padding: 40px 30px; /* Increased padding for less cramped feel */
             border-radius: 15px;
             text-align: center;
             z-index: 10;
-            max-width: 80%;
+            max-width: 90%; /* Wider on mobile for better space usage */
             border: 4px solid #FFEB3B; /* Yellow Lego frame */
             box-shadow: 0 0 15px rgba(255, 235, 59, 0.7); /* Glowing for excitement */
+            line-height: 1.6; /* Better line spacing */
+            font-size: 16px; /* Slightly larger font for readability */
         }
         #controls {
             display: flex;
@@ -71,7 +74,7 @@
         }
         .lr-row {
             justify-content: space-between; /* Space apart left and right like keyboard */
-            max-width: 80%;
+            max-width: 100%; /* Increased for more spacing */
         }
         .control-btn {
             width: 60px;
@@ -105,6 +108,10 @@
         #start-message.hidden { display: none; }
         /* Responsive adjustments */
         @media (max-width: 600px) {
+            #start-message { 
+                padding: 30px 20px; /* Adjusted for mobile */
+                font-size: 14px; /* Smaller font if needed */
+            }
             .control-btn { width: 50px; height: 50px; font-size: 24px; margin: 3px; }
             .lr-row { max-width: 90%; }
         }
