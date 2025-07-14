@@ -1,0 +1,168 @@
+body {
+    /* CSS Lego brick pattern: repeating gradients for grid-like bricks */
+    background: repeating-linear-gradient(to right, #333 0, #333 20px, #444 20px, #444 40px),
+                repeating-linear-gradient(to bottom, #333 0, #333 20px, #444 20px, #444 40px);
+    background-color: #222; /* Dark base for dojo feel */
+    font-family: 'Arial', sans-serif;
+    color: #fff;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.container {
+    position: relative;
+    width: 90vw;
+    max-width: 600px;
+    height: 90vh;
+    background: rgba(0, 0, 0, 0.5);
+    border: 5px solid #ffd700;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 0 20px #ff0000;
+    transition: all 0.5s;
+}
+
+#game-board {
+    display: grid;
+    grid-template-columns: repeat(28, 1fr);
+    grid-gap: 0;
+    width: 100%;
+    height: 80%;
+    background: #000;
+}
+
+.square {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.wall {
+    /* CSS blue Lego brick: gradient for face, shadow for depth, pseudo for studs */
+    background: linear-gradient(135deg, #0057a8 0%, #0073d1 50%, #0091ff 100%); /* Blue shades */
+    box-shadow: inset 0 0 5px #003366; /* Inner shadow for texture */
+    position: relative;
+}
+
+.wall::before {
+    /* Small circle studs */
+    content: '';
+    position: absolute;
+    top: 20%;
+    left: 20%;
+    width: 20%;
+    height: 20%;
+    background: radial-gradient(circle, #00aaff 40%, #0073d1 100%);
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.wall::after {
+    /* Another stud for brick feel */
+    content: '';
+    position: absolute;
+    top: 60%;
+    left: 60%;
+    width: 20%;
+    height: 20%;
+    background: radial-gradient(circle, #00aaff 40%, #0073d1 100%);
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.dot {
+    background: radial-gradient(circle, #ffd700 20%, transparent 20%);
+}
+
+.power-pill {
+    background: radial-gradient(circle, #00ff00 30%, transparent 30%);
+}
+
+.pacman {
+    /* CSS red ninja (Kai): circle with clip-path for opening mouth */
+    background: #ff0000;
+    border-radius: 50%;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 50% 75%, 30% 50%, 50% 25%); /* Mouth shape */
+    transition: transform 0.1s;
+}
+
+.ghost {
+    /* CSS green snake enemy: wavy oval shape */
+    background: #00ff00;
+    border-radius: 50% 50% 30% 70% / 60% 60% 40% 40%; /* Wavy bottom for slither */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+#score, #highscore, #lives, #level {
+    font-size: 1.2em;
+    text-align: center;
+    color: #ffd700;
+}
+
+.back-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #ff0000;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+#pause-btn {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: #0000ff;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+#fireworks {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    display: none;
+}
+
+#win-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3em;
+    color: #ffd700;
+    text-shadow: 0 0 10px #ff0000;
+    display: none;
+}
+
+.flash-red {
+    background-color: red !important;
+}
+
+/* Level excitement animations */
+.level-1 { animation: glow 2s infinite alternate; }
+.level-2 { border-color: #00ff00; animation: spin-border 3s infinite; }
+.level-3 { box-shadow: 0 0 30px #0000ff; animation: pulse 1s infinite; }
+.level-4 { animation: rotate 5s infinite linear; }
+.level-5 { border-color: #ff00ff; animation: excite 1s infinite; }
+
+@keyframes glow { 0% { box-shadow: 0 0 10px #ff0000; } 100% { box-shadow: 0 0 30px #ff0000; } }
+@keyframes spin-border { 0% { border-radius: 10px; } 100% { border-radius: 50px; } }
+@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+@keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes excite { 0% { box-shadow: 0 0 10px #ffd700; } 50% { box-shadow: 0 0 50px #ffd700; } 100% { box-shadow: 0 0 10px #ffd700; } }
+
+/* Responsive */
+@media (max-width: 600px) {
+    .container { width: 100vw; height: 100vh; padding: 5px; }
+    #game-board { height: 70%; }
+}
